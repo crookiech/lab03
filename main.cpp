@@ -26,13 +26,20 @@ public:
 
         T& operator*() {
             if (current == nullptr) {
-                std::cout << "Неверный индекс!" << std::endl;
+                throw std::out_of_range("Неверный индекс!");
+            }
+            return *current;
+        }
+
+        T& get() {
+            if (current == nullptr) {
+                throw std::out_of_range("Неверный индекс!");
             }
             return *current;
         }
 
         Iterator& operator++() {
-            ++current; // Переход к следующему элементу
+            ++current;
             return *this;
         }
 
@@ -40,6 +47,14 @@ public:
             return current != other.current;
         }
     };
+
+    Iterator begin() { 
+        return Iterator(data); 
+    }
+
+    Iterator end() { 
+        return Iterator(data + numberOfElements); 
+    }
 
     Array() : data(nullptr), size(0), numberOfElements(0) {}
 
@@ -142,14 +157,21 @@ public:
             return current->value;
         }
 
+        T& get() {
+            if (current == nullptr) {
+                std::cout << "Неверный индекс!" << std::endl;
+            }
+            return current->value;
+        }
+
         Iterator& operator++() {
             if (current != nullptr) current = current->next;
             return *this;
         }
 
         Iterator& operator--() {
-            if (current != nullptr && current->prev != nullptr)
-                current = current->prev;
+            if (current != nullptr && current->previous != nullptr)
+                current = current->previous;
             return *this;
         }
 
@@ -158,8 +180,13 @@ public:
         }
     };
 
-    Iterator begin() { return Iterator(head); }
-    Iterator end() { return Iterator(nullptr); }
+    Iterator begin() { 
+        return Iterator(head); 
+    }
+
+    Iterator end() { 
+        return Iterator(nullptr); 
+    }
 
     BidirectionalList() : head(nullptr), tail(nullptr), numberOfElements(0) {}
 
@@ -264,7 +291,7 @@ public:
             return current->value;
         }
 
-    int get_numberOfElements() const {
+    int get_size() const {
         return numberOfElements;
     }
 
@@ -303,6 +330,14 @@ public:
             }
             return current->value;
         }
+
+        T& get() {
+            if (current == nullptr) {
+                std::cout << "Неверный индекс!" << std::endl;
+            }
+            return current->value;
+        }
+
         Iterator& operator++() {
             if (current != nullptr) {
                 current = current->next;
@@ -314,8 +349,13 @@ public:
         }
     };
 
-    Iterator begin() { return Iterator(head); }
-    Iterator end() { return Iterator(nullptr); }
+    Iterator begin() { 
+        return Iterator(head); 
+    }
+
+    Iterator end() { 
+        return Iterator(nullptr); 
+    }
 
     void push_back(const T& value) {
         Node* newNode = new Node(value);
@@ -332,42 +372,42 @@ public:
     }
 
     void insert(int index, const T& value) {
-        if (index < 0 || index > numberOfElements) { // Исправлено условие
+        if (index < 0 || index > numberOfElements) {
             return;
         }
         Node* newNode = new Node(value);
         if (index == 0) {
-            newNode->next = head; // Устанавливаем новый узел как голову
+            newNode->next = head;
             head = newNode;
         } else {
             Node* current = head;
             for (int i = 0; i < index - 1; ++i) {
                 current = current->next;
             }
-            newNode->next = current->next; // Устанавливаем следующий узел
-            current->next = newNode; // Устанавливаем новый узел
+            newNode->next = current->next;
+            current->next = newNode;
         }
         ++numberOfElements;
     }
 
     void erase(int index) {
-        if (index < 0 || index >= numberOfElements) { // Исправлено условие
+        if (index < 0 || index >= numberOfElements) {
             return;
         }
         if (index == 0) {
             Node* nodeToRemove = head;
-            head = head->next; // Перемещаем голову
-            delete nodeToRemove; // Удаляем узел
+            head = head->next;
+            delete nodeToRemove;
         } else {
             Node* current = head;
             for (int i = 0; i < index - 1; ++i) {
-                current = current->next; // Находим предыдущий узел
+                current = current->next;
             }
-            Node* nodeToRemove = current->next; // Узел для удаления
-            current->next = nodeToRemove->next; // Пропускаем удаляемый узел
-            delete nodeToRemove; // Удаляем узел
+            Node* nodeToRemove = current->next;
+            current->next = nodeToRemove->next;
+            delete nodeToRemove;
         }
-        --numberOfElements; // Уменьшаем счетчик элементов
+        --numberOfElements;
     }
 
     void print() const {
@@ -379,21 +419,20 @@ public:
             }
             current = current->next;
         }
-        std::cout << std::endl; // Добавлено для лучшего форматирования вывода
     }
 
     T& operator[](int index) {
-        if (index < 0 || index >= numberOfElements) { // Исправлено условие
+        if (index < 0 || index >= numberOfElements) {
             std::cout << "Неверный индекс!" << std::endl;
         }
         Node* current = head;
         for (int i = 0; i < index; ++i) {
             current = current->next;
         }
-        return current->value; // Возвращаем значение узла
+        return current->value;
     }
 
-    int get_numberOfElements() const {
+    int get_size() const {
         return numberOfElements;
     }
 
@@ -407,37 +446,71 @@ public:
     }
 };
 
-// Функция-тест для проверки работы итераторов
-void testIterators() {
-    // Тестирование односвязного списка
-    UnidirectionalList<int> ulist;
-
-    for (int i = 0; i < 5; ++i) {
-        ulist.push_back(i);
+template <typename Container>
+void demonstrateContainer(const std::string& containerName) {
+    std::cout << "Пользовательский код с демонстрацией возможностей " << containerName << "." << std::endl;
+    Container container;
+    for (int i = 0; i < 10; i++) {
+        container.push_back(i);
     }
-
-    std::cout << "Односвязный список: ";
-    for (auto it = ulist.begin(); it != ulist.end(); ++it) {
-        std::cout << *it << " "; // Вывод значений
-    }
+    std::cout << "В контейнер добавлены числа от 0 до 9: ";
+    container.print();
     std::cout << std::endl;
-
-    // Тестирование двусвязного списка
-    BidirectionalList<int> blist;
-
-    for (int i = 5; i < 10; ++i) {
-        blist.push_back(i);
+    std::cout << "Размер контейнера: " << container.get_size() << std::endl;
+    for (int i = 0; i < 3; i++) {
+        container.erase(2);
     }
+    std::cout << "Из контейнера удалили 3, 5 и 7 элементы (по счету): ";
+    container.print();
+    std::cout << std::endl;
+    container.insert(0, 10);
+    std::cout << "В начало контейнера добавили 10: ";
+    container.print();
+    std::cout << std::endl;
+    container.insert(container.get_size() / 2, 20);
+    std::cout << "В середину контейнера добавили 20: ";
+    container.print();
+    std::cout << std::endl;
+    container.push_back(30);
+    std::cout << "В конец контейнера добавили 30: ";
+    container.print();
+    std::cout << std::endl;
+}
 
-    std::cout << "Двусвязный список: ";
-    for (auto it = blist.begin(); it != blist.end(); ++it) {
-        std::cout << *it << " "; // Вывод значений
+void customCode() {
+    demonstrateContainer<Array<int>>("последовательного контейнера");
+    std::cout << std::endl;
+    demonstrateContainer<BidirectionalList<int>>("двунаправленного контейнера спискового типа");
+    std::cout << std::endl;
+    demonstrateContainer<UnidirectionalList<int>>("однонаправленного контейнера спискового типа");
+}
+
+template <typename Container>
+void demonstrateTestIterators(const std::string& containerName) {
+    std::cout << "Тест итератора для " << containerName << "." << std::endl;
+    Container container;
+    for (int i = -5; i < 0; ++i) {
+        container.push_back(i);
+    }
+    std::cout << "Содержимое контенера, выведенное с помощью итератора: ";
+    for (auto it = container.begin(); it != container.end(); ++it) {
+        std::cout << *it << " ";
     }
     std::cout << std::endl;
 }
 
+void testIterators() {
+    demonstrateTestIterators<Array<int>>("последовательного контейнера");
+    std::cout << std::endl;
+    demonstrateTestIterators<BidirectionalList<int>>("двунаправленного контейнера спискового типа");
+    std::cout << std::endl;
+    demonstrateTestIterators<UnidirectionalList<int>>("однонаправленного контейнера спискового типа");
+}
+
 int main() {
-    std::cout << "Пользовательский код с демонстрацией возможностей последовательного контейнера." << std::endl;
+    customCode();
+    std::cout << std::endl;
+    std::cout << "Пользовательский код с демонстрацией возможностей последовательного контейнера с резервированием памяти." << std::endl;
     Array<int> array;
     for (int i = 0; i < 10; i++) {
         array.push_back(i);
@@ -445,62 +518,10 @@ int main() {
     std::cout << "В контейнер добавлены числа от 0 до 9: ";
     array.print();
     std::cout << std::endl;
-    std::cout << "Размер контейнера: " << array.get_size() << std::endl;
-    array.erase(2);
-    array.erase(3);
-    array.erase(4);
-    std::cout << "Из контейнера удалили 3, 5 и 7 элементы (по счету): ";
-    array.print();
-    std::cout << std::endl;
-    array.insert(0, 10);
-    std::cout << "В начало контейнера добавили 10: ";
-    array.print();
-    std::cout << std::endl;
-    array.insert(array.get_size() / 2, 20);
-    std::cout << "В середину контейнера добавили 20: ";
-    array.print();
-    std::cout << std::endl;
-    array.push_back(30);
-    std::cout << "В конец контейнера добавили 30: ";
-    array.print();
-    std::cout << std::endl;
-    std::cout << "Пользовательский код с демонстрацией возможностей контейнера спискового типа." << std::endl;
-    BidirectionalList<int> list;
-    for (int i = 0; i < 10; i++) {
-        list.push_back(i);
-    }
-    std::cout << "В контейнер добавлены числа от 0 до 9: ";
-    list.print();
-    std::cout << std::endl;
-    std::cout << "Размер контейнера: " << list.get_numberOfElements() << std::endl;
-    list.erase(2);
-    list.erase(3);
-    list.erase(4);
-    std::cout << "Из контейнера удалили 3, 5 и 7 элементы (по счету): ";
-    list.print();
-    std::cout << std::endl;
-    list.insert(0, 10);
-    std::cout << "В начало контейнера добавили 10: ";
-    list.print();
-    std::cout << std::endl;
-    list.insert(list.get_numberOfElements() / 2, 20);
-    std::cout << "В середину контейнера добавили 20: ";
-    list.print();
-    std::cout << std::endl;
-    list.push_back(30);
-    std::cout << "В конец контейнера добавили 30: ";
-    list.print();
-    std::cout << std::endl;
-    std::cout << "Пользовательский код с демонстрацией возможностей последовательного контейнера с резервированием памяти." << std::endl;
-    Array<int> array2;
-    for (int i = 0; i < 10; i++) {
-        array2.push_back(i);
-    }
-    std::cout << "В контейнер добавлены числа от 0 до 9: ";
-    array2.print();
-    std::cout << std::endl;
-    std::cout << "Количество элементов в контейнере: " << array2.get_size() << std::endl;
+    std::cout << "Количество элементов в контейнере: " << array.get_size() << std::endl;
     std::cout << "Размер контейнера: " << array.get_selectedSize() << std::endl;
+    std::cout << std::endl;
     testIterators();
+    std::cout << std::endl;
     return 0;
 }
