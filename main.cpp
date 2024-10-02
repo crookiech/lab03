@@ -58,6 +58,30 @@ public:
 
     Array() : data(nullptr), size(0), numberOfElements(0) {}
 
+    // Перемещающий конструктор
+    Array(Array&& other) noexcept 
+        : data(other.data), size(other.size), numberOfElements(other.numberOfElements) {
+        other.data = nullptr;
+        other.size = 0;
+        other.numberOfElements = 0;
+    }
+
+    // Перемещающий оператор присваивания
+    Array& operator=(Array&& other) noexcept {
+        if (this != &other) {
+            delete[] data;
+
+            data = other.data;
+            size = other.size;
+            numberOfElements = other.numberOfElements;
+
+            other.data = nullptr;
+            other.size = 0;
+            other.numberOfElements = 0;
+        }
+        return *this;
+    }
+
     void push_back(const T& value) {
         if (numberOfElements == size) {
             resize((size * 2) + 1);
@@ -95,23 +119,13 @@ public:
         for (int i = 0; i < numberOfElements; ++i) {
             std::cout << data[i];
             if (i < numberOfElements - 1) {
-            std::cout << ", ";
+                std::cout << ", ";
             }
         }
     }
 
     int& operator[](int index) {
         return data[index];
-    }
-
-    std::ostream& operator<<(std::ostream& os) const {
-        for (int i = 0; i < numberOfElements; ++i) {
-            os << data[i]; 
-            if (i < numberOfElements - 1) {
-            os << ", ";
-            }
-        }
-        return os;
     }
 
     int get_selectedSize() const {
@@ -189,6 +203,33 @@ public:
     }
 
     BidirectionalList() : head(nullptr), tail(nullptr), numberOfElements(0) {}
+
+    // Перемещающий конструктор
+    BidirectionalList(BidirectionalList&& other) noexcept 
+        :  head(other.head), tail(other.tail), numberOfElements(other.numberOfElements) {
+        other.head = nullptr;
+        other.tail = nullptr;
+        other.numberOfElements = 0;
+    }
+
+    // Перемещающий оператор присваивания
+    BidirectionalList& operator=(BidirectionalList&& other) noexcept {
+        if (this != &other) {
+            while (head != nullptr) {
+                Node* temp = head;
+                head = head->next;
+                delete temp;
+            }
+            head = other.head;
+            tail = other.tail;
+            numberOfElements = other.numberOfElements;
+
+            other.head = nullptr;
+            other.tail = nullptr;
+            other.numberOfElements = 0;
+        }
+        return *this;
+    }
 
     void push_back(const T& value) {
         Node* newNode = new Node(value);
@@ -319,8 +360,6 @@ private:
   int numberOfElements;
 
 public:
-    UnidirectionalList() : head(nullptr), numberOfElements(0) {}
-
     struct Iterator {
         Node* current;
         Iterator(Node* node) : current(node) {}
@@ -356,6 +395,32 @@ public:
     Iterator end() { 
         return Iterator(nullptr); 
     }
+
+    UnidirectionalList() : head(nullptr), numberOfElements(0) {}
+
+    // Перемещающий конструктор
+    UnidirectionalList(UnidirectionalList&& other) noexcept 
+        :  head(other.head), numberOfElements(other.numberOfElements) {
+        other.head = nullptr;
+        other.numberOfElements = 0;
+    }
+
+    // Перемещающий оператор присваивания
+    UnidirectionalList& operator=(UnidirectionalList&& other) noexcept {
+        if (this != &other) {
+            while (head != nullptr) {
+                Node* temp = head;
+                head = head->next;
+                delete temp;
+            }
+            head = other.head;
+            numberOfElements = other.numberOfElements;
+
+            other.head = nullptr;
+            other.numberOfElements = 0;
+        }
+        return *this;
+    }    
 
     void push_back(const T& value) {
         Node* newNode = new Node(value);
@@ -485,6 +550,60 @@ void customCode() {
     demonstrateContainer<UnidirectionalList<int>>("однонаправленного контейнера спискового типа");
 }
 
+// Функция для проверки работы перемещения
+template <typename Container>
+void demonstrateMoveSemantic(const std::string& containerName) {
+    std::cout << "Тестирование семантики перемещения " << containerName << "." << std::endl;
+    Container container1;
+    container1.push_back(1);
+    container1.push_back(1);
+    container1.push_back(1);
+    std::cout << "В контейнер container1 добавили три единицы: ";
+    container1.print();
+    std::cout << std::endl;
+    Container container2 = std::move(container1); // Перемещение контейнера
+    std::cout << "В контейнер container2 переместили контейнер container1: ";
+    container2.print(); // Проверяем содержимое второго контейнера
+    std::cout << std::endl;
+    std::cout << "Содержимое контейнера container1 после перемещения: ";
+    container1.print(); // Проверяем содержимое первого контейнера (должен быть пустым)
+    std::cout << std::endl;
+    if (container1.get_size() == 0) {
+        std::cout << "container1 успешно перемещен и теперь пуст." << std::endl;
+    } else {
+        std::cout << "Ошибка: container1 не пуст!" << std::endl;
+    }
+    Container container3;
+    container3.push_back(0);
+    container3.push_back(0);
+    container3.push_back(0);
+    container3.push_back(0);
+    std::cout << "В контейнер container3 добавили четыре нуля: ";
+    container3.print();
+    std::cout << std::endl;
+    container3 = std::move(container2); // Перемещение с использованием оператора присваивания
+    std::cout << "В контейнер container3 переместили контейнер container2: ";
+    container3.print(); // Проверяем содержимое третьего контейнера
+    std::cout << std::endl;
+    std::cout << "Содержимое контейнера container2 после перемещения: ";
+    container2.print(); // Проверяем содержимое второго контейнера (должен быть пустым)
+    std::cout << std::endl;
+    if (container2.get_size() == 0) {
+        std::cout << "container2 успешно перемещен и теперь пуст." << std::endl;
+    } else {
+        std::cout << "Ошибка: container2 не пуст!" << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+void testMoveSemantic() {
+    demonstrateMoveSemantic<Array<int>>("последовательного контейнера");
+    std::cout << std::endl;
+    demonstrateMoveSemantic<BidirectionalList<int>>("двунаправленного контейнера спискового типа");
+    std::cout << std::endl;
+    demonstrateMoveSemantic<UnidirectionalList<int>>("однонаправленного контейнера спискового типа");
+}
+
 template <typename Container>
 void demonstrateTestIterators(const std::string& containerName) {
     std::cout << "Тест итератора для " << containerName << "." << std::endl;
@@ -492,7 +611,7 @@ void demonstrateTestIterators(const std::string& containerName) {
     for (int i = -5; i < 0; ++i) {
         container.push_back(i);
     }
-    std::cout << "Содержимое контенера, выведенное с помощью итератора: ";
+    std::cout << "Содержимое контейнера, выведенное с помощью итератора: ";
     for (auto it = container.begin(); it != container.end(); ++it) {
         std::cout << *it << " ";
     }
@@ -520,6 +639,8 @@ int main() {
     std::cout << std::endl;
     std::cout << "Количество элементов в контейнере: " << array.get_size() << std::endl;
     std::cout << "Размер контейнера: " << array.get_selectedSize() << std::endl;
+    std::cout << std::endl;
+    testMoveSemantic();
     std::cout << std::endl;
     testIterators();
     std::cout << std::endl;
