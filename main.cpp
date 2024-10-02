@@ -543,11 +543,11 @@ void demonstrateContainer(const std::string& containerName) {
 }
 
 void customCode() {
-    demonstrateContainer<Array<int>>("последовательного контейнера");
+    demonstrateContainer<Array<int> >("последовательного контейнера");
     std::cout << std::endl;
-    demonstrateContainer<BidirectionalList<int>>("двунаправленного контейнера спискового типа");
+    demonstrateContainer<BidirectionalList<int> >("двунаправленного контейнера спискового типа");
     std::cout << std::endl;
-    demonstrateContainer<UnidirectionalList<int>>("однонаправленного контейнера спискового типа");
+    demonstrateContainer<UnidirectionalList<int> >("однонаправленного контейнера спискового типа");
 }
 
 // Функция для проверки работы перемещения
@@ -597,11 +597,11 @@ void demonstrateMoveSemantic(const std::string& containerName) {
 }
 
 void testMoveSemantic() {
-    demonstrateMoveSemantic<Array<int>>("последовательного контейнера");
+    demonstrateMoveSemantic<Array<int> >("последовательного контейнера");
     std::cout << std::endl;
-    demonstrateMoveSemantic<BidirectionalList<int>>("двунаправленного контейнера спискового типа");
+    demonstrateMoveSemantic<BidirectionalList<int> >("двунаправленного контейнера спискового типа");
     std::cout << std::endl;
-    demonstrateMoveSemantic<UnidirectionalList<int>>("однонаправленного контейнера спискового типа");
+    demonstrateMoveSemantic<UnidirectionalList<int> >("однонаправленного контейнера спискового типа");
 }
 
 template <typename Container>
@@ -619,11 +619,11 @@ void demonstrateTestIterators(const std::string& containerName) {
 }
 
 void testIterators() {
-    demonstrateTestIterators<Array<int>>("последовательного контейнера");
+    demonstrateTestIterators<Array<int> >("последовательного контейнера");
     std::cout << std::endl;
-    demonstrateTestIterators<BidirectionalList<int>>("двунаправленного контейнера спискового типа");
+    demonstrateTestIterators<BidirectionalList<int> >("двунаправленного контейнера спискового типа");
     std::cout << std::endl;
-    demonstrateTestIterators<UnidirectionalList<int>>("однонаправленного контейнера спискового типа");
+    demonstrateTestIterators<UnidirectionalList<int> >("однонаправленного контейнера спискового типа");
 }
 
 int main() {
