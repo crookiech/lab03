@@ -39,8 +39,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release_windows.outputs.upload_url }}
-          asset_path: ./lab03-0.0.${{ github.run_number }}-Windows.zip  # Проверьте правильность этого пути
-          asset_name: lab03-0.0.${{ github.run_number }}-Windows.zip
+          asset_path: ./lab03-0.0.${{ github.run_number }}-win64.zip
+          asset_name: lab03-0.0.${{ github.run_number }}-win64.zip
           asset_content_type: application/zip
   
   build_ubuntu:
