@@ -49,7 +49,7 @@ jobs:
       - run: cmake --build . --target package
       - name: Create Release (ubuntu)
         id: create_release_ubuntu
-        uses: actions/create-release-ubuntu@v1
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
