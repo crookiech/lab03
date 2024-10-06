@@ -66,8 +66,7 @@ jobs:
           upload_url: ${{ steps.create_release_ubuntu.outputs.upload_url }}
           asset_path: ./lab03-0.0.${{ github.run_number }}-Linux.deb
           asset_name: lab03-0.0.${{ github.run_number }}-Linux.deb
-          asset_content_type: application/vnd.debian.binary-package
-          allowUpdates: true
+          asset_content_type: application/zip
 
 
 # name: 'C++ CI'
