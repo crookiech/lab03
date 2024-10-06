@@ -27,8 +27,8 @@ jobs:
           draft: false
           prerelease: false
       - name: Upload Release Asset (windows)
-        id: upload-release-asset-windows
-        uses: actions/upload-release-asset-windows@v1
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -49,7 +49,7 @@ jobs:
       - run: cmake --build . --target package
       - name: Create Release (ubuntu)
         id: create_release_ubuntu
-        uses: actions/create-release@v1
+        uses: actions/create-release-ubuntu@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -58,8 +58,8 @@ jobs:
           draft: false
           prerelease: false 
       - name: Upload Release Asset (ubuntu)
-        id: upload-release-asset-ubuntu
-        uses: actions/upload-release-asset-ubuntu@v1
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
