@@ -35,7 +35,7 @@ public:
             if (current == nullptr) {
                 std::cout << "Неверный индекс!" << std::endl;
             }
-            return *current;
+            return *current; // возвращение ссылки на текущий объект
         }
         // Метод для получения ссылки на текущий элемент
         T& get() { 
@@ -47,7 +47,7 @@ public:
         // Перегрузка оператора ++ для перехода к следующему элементу контейнера
         Iterator& operator++() { 
             ++current;
-            return *this;
+            return *this; // возвращение ссылки на текущий объект
         }
         // Перегрузка оператора != для сравнения двух итераторов
         bool operator!=(const Iterator& other) const { 
@@ -64,25 +64,27 @@ public:
     }
     // Конструктор
     Array() : data(nullptr), size(0), numberOfElements(0) {} // инициализация контейнера с нулевым размером и указателем на nullptr
-    // Перемещающий конструктор ?
-    Array(Array&& other) noexcept 
-        : data(other.data), size(other.size), numberOfElements(other.numberOfElements) {
+    // Перемещающий конструктор
+    Array(Array&& other) noexcept // конструктор ожидает, что other  будет использоваться только один раз
+        : data(other.data), size(other.size), numberOfElements(other.numberOfElements) { // инициализация data, size и numberOfElements нового Array объекта, используя данные из other объекта
+        // после передачи владения данными,  other объект становится пустым
         other.data = nullptr;
         other.size = 0;
         other.numberOfElements = 0;
     }
-    // Перемещающий оператор присваивания ?
+    // Перемещающий оператор присваивания
     Array& operator=(Array&& other) noexcept {
-        if (this != &other) {
-            delete[] data;
-            data = other.data;
-            size = other.size;
-            numberOfElements = other.numberOfElements;
+        if (this != &other) { // проверка на самоприсваивание
+            delete[] data; // освобождение памяти, выделенной для  data в текущем объекте (если она была выделена)
+            data = other.data; // перенос владения  data от  other к текущему объекту
+            size = other.size; // перенос значения  size
+            numberOfElements = other.numberOfElements; // перенос значения  numberOfElements
+            // после передачи владения данными,  other объект становится пустым
             other.data = nullptr;
             other.size = 0;
             other.numberOfElements = 0;
         }
-        return *this;
+        return *this; // возвращение ссылки на текущий объект
     }
     // Добавление элемента в конец контейнера
     void push_back(const T& value) { 
@@ -165,8 +167,7 @@ private:
 public:
     // Структура, представляющая итератор для обхода контейнера
     struct Iterator {
-        // указатель на текущий узел
-        Node* current;
+        Node* current; // указатель на текущий узел
         // Конструктор итератора, инициализирующий его указатель на Node* node
         Iterator(Node* node) : current(node) {}
         // Оператор разыменования 
@@ -209,15 +210,213 @@ public:
     }
     // Конструктор
     BidirectionalList() : head(nullptr), tail(nullptr), numberOfElements(0) {} // инициализирует контейнер как пустой
-    // Перемещающий конструктор ?
-    BidirectionalList(BidirectionalList&& other) noexcept 
-        :  head(other.head), tail(other.tail), numberOfElements(other.numberOfElements) {
-        other.head = nullptr;
+    // Перемещающий конструктор
+    BidirectionalList(BidirectionalList&& other) noexcept // конструктор ожидает, что other  будет использоваться только один раз
+        :  head(other.head), tail(other.tail), numberOfElements(other.numberOfElements) { // инициализация head, tail и numberOfElements нового BidirectionalList объекта, используя данные из other объекта
+        // после передачи владения данными,  other объект становится пустым
+        other.head = nullptr; 
         other.tail = nullptr;
         other.numberOfElements = 0;
     }
-    // Перемещающий оператор присваивания ?
+    // Перемещающий оператор присваивания
     BidirectionalList& operator=(BidirectionalList&& other) noexcept {
+        if (this != &other) { // проверка на самоприсваивание
+            while (head != nullptr) { // удаление всех его узлов для освобождения памяти 
+                Node* temp = head;
+                head = head->next;
+                delete temp;
+            }
+            head = other.head; // перенос владения  head от  other к текущему объекту
+            tail = other.tail; // перенос tail
+            numberOfElements = other.numberOfElements; // перенос numberOfElements
+            // после передачи владения данными,  other объект становится пустым
+            other.head = nullptr;
+            other.tail = nullptr;
+            other.numberOfElements = 0;
+        }
+        return *this;
+    }
+    // Добавление элемента в конец контейнера
+    void push_back(const T& value) {
+        Node* newNode = new Node(value); // создание нового узла
+        if (head == nullptr) { // контейнер пуст
+            head = newNode; // новый узел становится началом контейнера
+            tail = newNode; // новый узел становится концом контейнера
+        } else { // контейнер не пуст
+            tail->next = newNode; // связка нового узла с последним элементом контейнера
+            newNode->previous = tail; // связка нового узла с предыдущим элементом контейнера
+            tail = newNode; // новый узел становится новым хвостом контейнера
+        }
+        ++numberOfElements; // увеличение количества элементов на 1
+    }
+    // Добавление элемента в контейнер по заданному индексу
+    void insert(int index, const T& value) {
+        if (index < 0 || index > numberOfElements) {
+            std::cout << "Неверный индекс!" << std::endl;
+            return; // если индекс больше, чем число элементов, функция завершается
+        }
+        Node* newNode = new Node(value); // создание нового узла
+        if (index == 0) {
+            if (head == nullptr) { // если контейнер пуст, новый узел становится и головой, и хвостом
+                head = newNode;
+                tail = newNode;
+            } else { // если контейнер не пуст, новый узел вставляется перед головой
+                newNode->next = head; // новый узел указывает на старую голову
+                head->previous = newNode; // старая голова указывает на новый узел
+                head = newNode; // новый узел становится новой головой списка
+            }
+            ++numberOfElements; // увеличение количества элементов на 1
+            return;
+        }
+        Node* current = head; // создание текущего узла, который изначально указывает на голову
+        for (int i = 0; i < index - 1; ++i) { // переход к узлу с нужным индексом
+            current = current->next; // переход к следующему узлу в списке
+        }
+        newNode->next = current->next; // новый узел указывает на узел, который был после current
+        current->next = newNode; // узел current указывает на новый узел
+        newNode->previous = current; // новый узел указывает на current
+        if (newNode->next != nullptr) { // если новый узел не является последним
+            newNode->next->previous = newNode; // узел, следующий за новым, должен указывать на новый
+        } else { // если новый узел является последним
+            tail = newNode; // новый узел становится новым хвостом
+        }
+        ++numberOfElements; // увеличение количества элементов на 1
+    }
+    // Удаление элемента из контейнера по заданному индексу
+    void erase(int index) {
+        if (index < 0 || index > numberOfElements) {
+            std::cout << "Неверный индекс!" << std::endl;
+            return; // если индекс больше, чем число элементов, функция завершается
+        }
+        if (index == 0) { 
+            if (head == nullptr) { // если список пуст, функция завершается
+                return;
+            }
+            Node* nodeToRemove = head; // создание указателя на узел, который нужно удалить
+            head = head->next; // устанавливаем новый head на следующий узел
+            if (head != nullptr) { // если список не пуст, новый head не имеет предыдущего узла
+                head->previous = nullptr;
+            } else { // если список пуст, новый tail тоже должен быть nullptr
+                tail = nullptr;
+            }
+            delete nodeToRemove; // освобождение памяти, занятой удаляемым узлом
+            --numberOfElements; // уменьшение количества элементов на 1
+            return;
+        }
+        Node* current = head; // создание указателя на текущий узел, после которого будет удаляться узел (изначально указывает на голову)
+        for (int i = 0; i < index - 1; ++i) { // переход к узлу с индексом index - 1
+            current = current->next;
+        }
+        Node* nodeToRemove = current->next; // сохраняем указатель на узел, который нужно удалить
+        current->next = nodeToRemove->next; // устанавливаем next для узла current на следующий узел после удаляемого
+        if (nodeToRemove->next != nullptr) { // если удаляемый узел не был последним
+            nodeToRemove->next->previous = current; // устанавливаем previous для узла, следующего за удаляемым, на current
+        } else { // если удаляемый узел был последним
+            tail = current; // устанавливаем tail на current
+        }
+        delete nodeToRemove; // освобождение памяти, занятой удаляемым узлом
+        --numberOfElements; // уменьшение количества элементов на 1
+    }
+    // Вывод в консоль всех элементов контейнера, разделенных запятыми
+    void print() const {
+        Node* current = head;
+        while (current != nullptr) {
+            std::cout << current->value;
+            if (current->next != nullptr) {
+                std::cout << ", ";
+            }
+            current = current->next;
+        }
+    }
+    // Перегрузка оператора [] для доступа к элементам контейнера по индексу
+    T& operator[](int index) {
+        if (index < 0 || index >= numberOfElements) {
+            std::cout << "Неверный индекс!" << std::endl;
+        }
+        Node* current = head; // указатель на текущий элемент в контейнере (изначально указывает на голову)
+        for (int i = 0; i < index; ++i) { // переход к узлу с нужным индексом
+            current = current->next; // переход к следующему узлу в контейнере
+        }
+        return current->value; // возвращение ссылки на значение узла
+    }
+    // Возвращает количество элементов в контейнере
+    int get_size() const {
+        return numberOfElements;
+    }
+    // Деструктор
+    ~BidirectionalList() {
+        Node* current = head; // указатель на текущий элемент в контейнере (изначально указывает на голову)
+        while (current != nullptr) { // цикл по всем узлам списка
+            Node* next = current->next; // сохраняем указатель на следующий узел
+            delete current; // освобождение памяти, занятой текущим узлом
+            current = next; // переход к следующему узлу
+        }
+    }
+};
+
+// Однонаправленный списковый контейнер
+template <typename T>
+class UnidirectionalList {
+private:
+    // Структура, представляющая узел контейнера
+    struct Node {
+        T value; // значение, хранящееся в узле
+        Node* next; // указатель на следующий узел в контейнере
+        // Конструктор
+        Node(const T& value) : value(value), next(nullptr) {} // инициализация значения узла, установка указателя next в nullptr
+    };
+    Node* head; // указатель на первый узел контейнера
+    int numberOfElements; // количество элементов в контейнере
+public:
+    // Структура, представляющая итератор для обхода контейнера
+    struct Iterator {
+        Node* current; // указатель на текущий узел
+        // Конструктор итератора, инициализирующий его указатель на Node* node
+        Iterator(Node* node) : current(node) {}
+        // Оператор разыменования 
+        T& operator*() {
+            if (current == nullptr) {
+                std::cout << "Неверный индекс!" << std::endl;
+            }
+            return current->value; // возвращает ссылку на значение текущего узла
+        }
+        // Метод для получения ссылки на текущий элемент
+        T& get() {
+            if (current == nullptr) {
+                std::cout << "Неверный индекс!" << std::endl;
+            }
+            return current->value;
+        }
+        // Перегрузка оператора ++ для перехода к следующему элементу контейнера
+        Iterator& operator++() {
+            if (current != nullptr) {
+                current = current->next;
+            }
+            return *this;
+        }
+        // Перегрузка оператора != для сравнения двух итераторов
+        bool operator!=(const Iterator& other) const {
+            return current != other.current;
+        }
+    };
+    // Возвращает итератор, указывающий на первый узел списка
+    Iterator begin() { 
+        return Iterator(head); 
+    }
+    // Возвращает итератор, указывающий на конец списка
+    Iterator end() { 
+        return Iterator(nullptr); 
+    }
+    // Конструктор
+    UnidirectionalList() : head(nullptr), numberOfElements(0) {} // инициализирует контейнер как пустой
+    // Перемещающий конструктор
+    UnidirectionalList(UnidirectionalList&& other) noexcept 
+        :  head(other.head), numberOfElements(other.numberOfElements) {
+        other.head = nullptr;
+        other.numberOfElements = 0;
+    }
+    // Перемещающий оператор присваивания
+    UnidirectionalList& operator=(UnidirectionalList&& other) noexcept {
         if (this != &other) {
             while (head != nullptr) {
                 Node* temp = head;
@@ -225,91 +424,64 @@ public:
                 delete temp;
             }
             head = other.head;
-            tail = other.tail;
             numberOfElements = other.numberOfElements;
+
             other.head = nullptr;
-            other.tail = nullptr;
             other.numberOfElements = 0;
         }
         return *this;
-    }
-    // Добавление элемента в конец контейнера ? 
+    }    
+    // Добавление элемента в конец контейнера
     void push_back(const T& value) {
-        Node* newNode = new Node(value); // создание нового узла
+        Node* newNode = new Node(value);
         if (head == nullptr) {
             head = newNode;
-            tail = newNode;
         } else {
-            tail->next = newNode;
-            newNode->previous = tail;
-            tail = newNode;
+            Node* current = head;
+            while (current->next != nullptr) {
+                current = current->next;
+            }
+            current->next = newNode;
         }
         ++numberOfElements;
     }
-    // Добавление элемента в контейнер по заданному индексу ?
+    // Добавление элемента в контейнер по заданному индексу
     void insert(int index, const T& value) {
-        if (index > numberOfElements) {
+        if (index < 0 || index > numberOfElements) {
             return;
         }
         Node* newNode = new Node(value);
         if (index == 0) {
-            if (head == nullptr) {
-                head = newNode;
-                tail = newNode;
-            } else {
-                newNode->next = head;
-                head->previous = newNode;
-                head = newNode;
-            }
-            ++numberOfElements;
-            return;
-        }
-        Node* current = head;
-        for (int i = 0; i < index - 1; ++i) {
-            current = current->next;
-        }
-        newNode->next = current->next;
-        current->next = newNode;
-        newNode->previous = current;
-        if (newNode->next != nullptr) {
-            newNode->next->previous = newNode;
+            newNode->next = head;
+            head = newNode;
         } else {
-            tail = newNode;
+            Node* current = head;
+            for (int i = 0; i < index - 1; ++i) {
+                current = current->next;
+            }
+            newNode->next = current->next;
+            current->next = newNode;
         }
         ++numberOfElements;
     }
     // Удаление элемента из контейнера по заданному индексу
     void erase(int index) {
-        if (index >= numberOfElements) {
+        if (index < 0 || index >= numberOfElements) {
             return;
         }
         if (index == 0) {
-            if (head == nullptr) {
-                return;
-            }
             Node* nodeToRemove = head;
             head = head->next;
-            if (head != nullptr) {
-                head->previous = nullptr;
-            } else {
-                tail = nullptr;
-            }
             delete nodeToRemove;
-            --numberOfElements;
-            return;
-        }
-        Node* current = head;
-        for (int i = 0; i < index - 1; ++i) {
-            current = current->next;
-        }
-        Node* nodeToRemove = current->next;
-        current->next = nodeToRemove->next;
-        if (nodeToRemove->next != nullptr) {
-            nodeToRemove->next->previous = current;
         } else {
-            tail = current;
+            Node* current = head;
+            for (int i = 0; i < index - 1; ++i) {
+                current = current->next;
+            }
+            Node* nodeToRemove = current->next;
+            current->next = nodeToRemove->next;
+            delete nodeToRemove;
         }
-        delete nodeToRemove;
         --numberOfElements;
     }
     // Вывод в консоль всех элементов контейнера, разделенных запятыми
@@ -338,172 +510,7 @@ public:
     int get_size() const {
         return numberOfElements;
     }
-    // Деструктор ?
-    ~BidirectionalList() {
-        Node* current = head;
-        while (current != nullptr) {
-            Node* next = current->next;
-            delete current;
-            current = next;
-        }
-    }
-};
-
-// Однонаправленный списковый контейнер
-template <typename T>
-class UnidirectionalList {
-private:
-  struct Node {
-    T value;
-    Node* next;
-    Node(const T& value) : value(value), next(nullptr) {}
-  };
-
-  Node* head;
-  int numberOfElements;
-
-public:
-    struct Iterator {
-        Node* current;
-        Iterator(Node* node) : current(node) {}
-        T& operator*() {
-            if (current == nullptr) {
-                std::cout << "Неверный индекс!" << std::endl;
-            }
-            return current->value;
-        }
-
-        T& get() {
-            if (current == nullptr) {
-                std::cout << "Неверный индекс!" << std::endl;
-            }
-            return current->value;
-        }
-
-        Iterator& operator++() {
-            if (current != nullptr) {
-                current = current->next;
-            }
-            return *this;
-        }
-        bool operator!=(const Iterator& other) const {
-            return current != other.current;
-        }
-    };
-
-    Iterator begin() { 
-        return Iterator(head); 
-    }
-
-    Iterator end() { 
-        return Iterator(nullptr); 
-    }
-
-    UnidirectionalList() : head(nullptr), numberOfElements(0) {}
-
-    // Перемещающий конструктор
-    UnidirectionalList(UnidirectionalList&& other) noexcept 
-        :  head(other.head), numberOfElements(other.numberOfElements) {
-        other.head = nullptr;
-        other.numberOfElements = 0;
-    }
-
-    // Перемещающий оператор присваивания
-    UnidirectionalList& operator=(UnidirectionalList&& other) noexcept {
-        if (this != &other) {
-            while (head != nullptr) {
-                Node* temp = head;
-                head = head->next;
-                delete temp;
-            }
-            head = other.head;
-            numberOfElements = other.numberOfElements;
-
-            other.head = nullptr;
-            other.numberOfElements = 0;
-        }
-        return *this;
-    }    
-
-    void push_back(const T& value) {
-        Node* newNode = new Node(value);
-        if (head == nullptr) {
-            head = newNode;
-        } else {
-            Node* current = head;
-            while (current->next != nullptr) {
-                current = current->next;
-            }
-            current->next = newNode;
-        }
-        ++numberOfElements;
-    }
-
-    void insert(int index, const T& value) {
-        if (index < 0 || index > numberOfElements) {
-            return;
-        }
-        Node* newNode = new Node(value);
-        if (index == 0) {
-            newNode->next = head;
-            head = newNode;
-        } else {
-            Node* current = head;
-            for (int i = 0; i < index - 1; ++i) {
-                current = current->next;
-            }
-            newNode->next = current->next;
-            current->next = newNode;
-        }
-        ++numberOfElements;
-    }
-
-    void erase(int index) {
-        if (index < 0 || index >= numberOfElements) {
-            return;
-        }
-        if (index == 0) {
-            Node* nodeToRemove = head;
-            head = head->next;
-            delete nodeToRemove;
-        } else {
-            Node* current = head;
-            for (int i = 0; i < index - 1; ++i) {
-                current = current->next;
-            }
-            Node* nodeToRemove = current->next;
-            current->next = nodeToRemove->next;
-            delete nodeToRemove;
-        }
-        --numberOfElements;
-    }
-
-    void print() const {
-        Node* current = head;
-        while (current != nullptr) {
-            std::cout << current->value;
-            if (current->next != nullptr) {
-                std::cout << ", ";
-            }
-            current = current->next;
-        }
-    }
-    // Перегрузка оператора [] для доступа к элементам контейнера по индексу
-    T& operator[](int index) {
-        if (index < 0 || index >= numberOfElements) {
-            std::cout << "Неверный индекс!" << std::endl;
-        }
-        Node* current = head;
-        for (int i = 0; i < index; ++i) {
-            current = current->next;
-        }
-        return current->value;
-    }
-    // Возвращает количество элементов в контейнере
-    int get_size() const {
-        return numberOfElements;
-    }
-
+    // Деструктор
     ~UnidirectionalList() {
         Node* current = head;
         while (current != nullptr) {
