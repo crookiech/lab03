@@ -448,6 +448,7 @@ public:
     // Добавление элемента в контейнер по заданному индексу
     void insert(int index, const T& value) {
         if (index < 0 || index > numberOfElements) {
+            std::cout << "Неверный индекс!" << std::endl;
             return;
         }
         Node* newNode = new Node(value);
@@ -467,6 +468,7 @@ public:
     // Удаление элемента из контейнера по заданному индексу
     void erase(int index) {
         if (index < 0 || index >= numberOfElements) {
+            std::cout << "Неверный индекс!" << std::endl;
             return;
         }
         if (index == 0) {
@@ -522,9 +524,10 @@ public:
 };
 
 template <typename Container>
+// Шаблонная функция для вывода пользовательского кода
 void demonstrateContainer(const std::string& containerName) {
     std::cout << "Пользовательский код с демонстрацией возможностей " << containerName << "." << std::endl;
-    Container container;
+    Container container; // создание объекта контейнера типа Container (переданный через шаблонный параметр)
     for (int i = 0; i < 10; i++) {
         container.push_back(i);
     }
@@ -532,9 +535,9 @@ void demonstrateContainer(const std::string& containerName) {
     container.print();
     std::cout << std::endl;
     std::cout << "Размер контейнера: " << container.get_size() << std::endl;
-    for (int i = 0; i < 3; i++) {
-        container.erase(2);
-    }
+    container.erase(3-1);
+    container.erase(5-2);
+    container.erase(7-3);
     std::cout << "Из контейнера удалили 3, 5 и 7 элементы (по счету): ";
     container.print();
     std::cout << std::endl;
@@ -553,11 +556,11 @@ void demonstrateContainer(const std::string& containerName) {
 }
 
 void customCode() {
-    demonstrateContainer<Array<int> >("последовательного контейнера");
+    demonstrateContainer<Array<int> >("последовательного контейнера"); // вызов функции demonstrateContainer для типа контейнера Array<int>, передавая имя "последовательного контейнера"
     std::cout << std::endl;
-    demonstrateContainer<BidirectionalList<int> >("двунаправленного контейнера спискового типа");
+    demonstrateContainer<BidirectionalList<int> >("двунаправленного контейнера спискового типа"); // вызов функции demonstrateContainer для типа контейнера BidirectionalList<int>, передавая имя "двунаправленного контейнера спискового типа"
     std::cout << std::endl;
-    demonstrateContainer<UnidirectionalList<int> >("однонаправленного контейнера спискового типа");
+    demonstrateContainer<UnidirectionalList<int> >("однонаправленного контейнера спискового типа"); // вызов функции demonstrateContainer для типа контейнера UnidirectionalList<int>, передавая имя "однонаправленного контейнера спискового типа"
 }
 
 // Функция для проверки работы перемещения
@@ -617,13 +620,13 @@ void testMoveSemantic() {
 template <typename Container>
 void demonstrateTestIterators(const std::string& containerName) {
     std::cout << "Тест итератора для " << containerName << "." << std::endl;
-    Container container;
+    Container container; // cоздание контейнера
     for (int i = -5; i < 0; ++i) {
-        container.push_back(i);
+        container.push_back(i); // заполнение контейнера
     }
     std::cout << "Содержимое контейнера, выведенное с помощью итератора: ";
-    for (auto it = container.begin(); it != container.end(); ++it) {
-        std::cout << *it << " ";
+    for (auto it = container.begin(); it != container.end(); ++it) { // перебор с помощью итератора
+        std::cout << *it << " "; // вывод значения, на которое указывает итератор
     }
     std::cout << std::endl;
 }
