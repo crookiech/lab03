@@ -1,120 +1,123 @@
 #include <iostream>
 
+// Шаблон класса, который может работать с любым типом данных, представленным параметром T
+template <typename T> 
 // Последовательный контейнер
-template <typename T>
 class Array {
 private:
-    T* data;
-    int size;
-    int numberOfElements;
-
+    T* data; // указатель на динамически выделенную память, в которой хранятся элементы контейнера
+    int size; // размер выделенной памяти для контейнера
+    int numberOfElements; // количество элементов в контейнере
+    // Изменение размера контейнера
     void resize(int newSize) {
-        int* newData = new T[newSize];
-        for (int i = 0; i < numberOfElements; ++i) {
-            newData[i] = data[i];
+        if (newSize == size) {
+            return; // изменение размера не требуется
         }
-        delete[] data;
-        data = newData;
-        size = newSize;
+        T* newData = new T[newSize]; // выделение новой памяти размером newSize
+        if (newSize > size) {
+            std::move(data, data + numberOfElements, newData); // копирование существующих элементов, если новый размер больше
+        } else {
+            std::move(data, data + newSize, newData); // перемещение элементов, если новый размер меньше
+        }
+        delete[] data; // освобождение старой памяти
+        data = newData; // обновление указателя data на новую память
+        size = newSize; // обновление размера size контейнера
     }
 
 public:
-    struct Iterator {
-        T* current;
-
-        Iterator(T* ptr) : current(ptr) {}
-
-        T& operator*() {
+    // Структура, представляющая итератор для обхода контейнера
+    struct Iterator { 
+        T* current; // указатель на текущий элемент в контейнере
+        // Конструктор, инициализирующий current указателем на элемент контейнера
+        Iterator(T* ptr) : current(ptr) {} 
+        // Перегрузка оператора * для получения ссылки на текущий элемент
+        T& operator*() { 
             if (current == nullptr) {
-                throw std::out_of_range("Неверный индекс!");
+                std::cout << "Неверный индекс!" << std::endl;
             }
             return *current;
         }
-
-        T& get() {
+        // Метод для получения ссылки на текущий элемент
+        T& get() { 
             if (current == nullptr) {
-                throw std::out_of_range("Неверный индекс!");
+                std::cout << "Неверный индекс!" << std::endl;
             }
             return *current;
         }
-
-        Iterator& operator++() {
+        // Перегрузка оператора ++ для перехода к следующему элементу контейнера
+        Iterator& operator++() { 
             ++current;
             return *this;
         }
-
-        bool operator!=(const Iterator& other) const {
+        // Перегрузка оператора != для сравнения двух итераторов
+        bool operator!=(const Iterator& other) const { 
             return current != other.current;
         }
     };
-
+    // Возвращает итератор, указывающий на первый элемент контейнера
     Iterator begin() { 
         return Iterator(data); 
     }
-
+    // Возвращает итератор, указывающий на элемент, следующий за последним элементом контейнера
     Iterator end() { 
         return Iterator(data + numberOfElements); 
     }
-
-    Array() : data(nullptr), size(0), numberOfElements(0) {}
-
-    // Перемещающий конструктор
+    // Конструктор
+    Array() : data(nullptr), size(0), numberOfElements(0) {} // инициализация контейнера с нулевым размером и указателем на nullptr
+    // Перемещающий конструктор ?
     Array(Array&& other) noexcept 
         : data(other.data), size(other.size), numberOfElements(other.numberOfElements) {
         other.data = nullptr;
         other.size = 0;
         other.numberOfElements = 0;
     }
-
-    // Перемещающий оператор присваивания
+    // Перемещающий оператор присваивания ?
     Array& operator=(Array&& other) noexcept {
         if (this != &other) {
             delete[] data;
-
             data = other.data;
             size = other.size;
             numberOfElements = other.numberOfElements;
-
             other.data = nullptr;
             other.size = 0;
             other.numberOfElements = 0;
         }
         return *this;
     }
-
-    void push_back(const T& value) {
+    // Добавление элемента в конец контейнера
+    void push_back(const T& value) { 
         if (numberOfElements == size) {
-            resize((size * 2) + 1);
+            resize((size * 2) + 1); // увеличение размера контейнера, если количество элементов равно текущему размеру
         }
-        data[numberOfElements++] = value;
+        data[numberOfElements++] = value; // добавление элемента value в конец контейнера
     }
-
+    // Добавление элемента в контейнер по заданному индексу
     void insert(int index, const T& value) {
         if (index < 0 || index > numberOfElements) {
             std::cout << "Неверный индекс!" << std::endl;
             return;
         }
         if (numberOfElements == size) {
-            resize((size * 2) + 1);
+            resize((size * 2) + 1); // увеличение размера контейнера, если количество элементов равно текущему размеру
         }
         for (int i = numberOfElements; i > index; --i) {
-            data[i] = data[i - 1];
+            data[i] = data[i - 1]; // сдвиг элементов, начиная с index, на одну позицию вправо, чтобы освободить место для нового элемента
         }
-        data[index] = value;
-        ++numberOfElements;
+        data[index] = value; // добавление элемента в контейнер по заданному индексу
+        ++numberOfElements; // увеличение количества элементов в контейнере на 1
     }
-
+    // Удаление элемента из контейнера по заданному индексу
     void erase(int index) {
         if (index < 0 || index >= numberOfElements) {
             std::cout << "Неверный индекс!" << std::endl;
             return;
         }
         for (int i = index; i < numberOfElements - 1; ++i) {
-            data[i] = data[i + 1];
+            data[i] = data[i + 1]; // сдвиг элементов, начиная с index, на одну позицию влево, чтобы заполнить пустоту
         }
-        --numberOfElements;
-        }
-
+        --numberOfElements; // уменьшение количества элементов в контейнере на 1
+    }
+    // Вывод в консоль всех элементов контейнера, разделенных запятыми
     void print() const {
         for (int i = 0; i < numberOfElements; ++i) {
             std::cout << data[i];
@@ -123,96 +126,97 @@ public:
             }
         }
     }
-
+    // Перегрузка оператора [] для доступа к элементам контейнера по индексу
     int& operator[](int index) {
         return data[index];
     }
-
+    // Возвращает размер выделенной памяти для контейнера
     int get_selectedSize() const {
         return size;
     }
-
+    // Возвращает количество элементов в контейнере
     int get_size() const {
         return numberOfElements;
     }
-
+    // Деструктор
     ~Array() {
         if (data != nullptr) {
-            delete[] data;
+            delete[] data; // освобождение памяти, выделенной для контейнера, если она была выделена
         }
     }
 };
 
-// Двунаправленный списковый контейнер
+// Шаблон класса, который может работать с любым типом данных, представленным параметром T
 template <typename T>
+// Двунаправленный списковый контейнер
 class BidirectionalList {
 private:
+    // Структура, представляющая узел контейнера
     struct Node {
-        T value;
-        Node* next;
-        Node* previous;
-        Node(const T& value) : value(value), next(nullptr), previous(nullptr) {}
+        T value; // значение, хранящееся в узле
+        Node* next; // указатель на следующий узел в контейнере
+        Node* previous; // указатель на предыдущий узел в контейнере
+        // Конструктор
+        Node(const T& value) : value(value), next(nullptr), previous(nullptr) {} // инициализация значения узла, установка указателя next и previous в nullptr
     };
-
-    Node* head;
-    Node* tail;
-    int numberOfElements;
-
+    Node* head; // указатель на первый узел контейнера
+    Node* tail; // указатель на последний узел контейнера
+    int numberOfElements; // количество элементов в контейнере
 public:
+    // Структура, представляющая итератор для обхода контейнера
     struct Iterator {
+        // указатель на текущий узел
         Node* current;
-
+        // Конструктор итератора, инициализирующий его указатель на Node* node
         Iterator(Node* node) : current(node) {}
-
+        // Оператор разыменования 
         T& operator*() {
             if (current == nullptr){
                 std::cout << "Неверный индекс!" << std::endl;
             }
-            return current->value;
+            return current->value; // возвращает ссылку на значение текущего узла
         }
-
+        // Возвращает ссылку на значение текущего узла
         T& get() {
             if (current == nullptr) {
                 std::cout << "Неверный индекс!" << std::endl;
             }
             return current->value;
         }
-
+        // Перегрузка оператора ++ для перехода к следующему элементу контейнера
         Iterator& operator++() {
             if (current != nullptr) current = current->next;
             return *this;
         }
-
+        // Перегрузка оператора -- для перехода к предыдущему элементу контейнера
         Iterator& operator--() {
             if (current != nullptr && current->previous != nullptr)
                 current = current->previous;
             return *this;
         }
-
+        // Перегрузка оператора != для сравнения двух итераторов
         bool operator!=(const Iterator& other) const {
             return current != other.current;
         }
     };
-
+    // Возвращает итератор, указывающий на первый узел списка
     Iterator begin() { 
         return Iterator(head); 
     }
-
+    // Возвращает итератор, указывающий на конец списка
     Iterator end() { 
         return Iterator(nullptr); 
     }
-
-    BidirectionalList() : head(nullptr), tail(nullptr), numberOfElements(0) {}
-
-    // Перемещающий конструктор
+    // Конструктор
+    BidirectionalList() : head(nullptr), tail(nullptr), numberOfElements(0) {} // инициализирует контейнер как пустой
+    // Перемещающий конструктор ?
     BidirectionalList(BidirectionalList&& other) noexcept 
         :  head(other.head), tail(other.tail), numberOfElements(other.numberOfElements) {
         other.head = nullptr;
         other.tail = nullptr;
         other.numberOfElements = 0;
     }
-
-    // Перемещающий оператор присваивания
+    // Перемещающий оператор присваивания ?
     BidirectionalList& operator=(BidirectionalList&& other) noexcept {
         if (this != &other) {
             while (head != nullptr) {
@@ -223,16 +227,15 @@ public:
             head = other.head;
             tail = other.tail;
             numberOfElements = other.numberOfElements;
-
             other.head = nullptr;
             other.tail = nullptr;
             other.numberOfElements = 0;
         }
         return *this;
     }
-
+    // Добавление элемента в конец контейнера ? 
     void push_back(const T& value) {
-        Node* newNode = new Node(value);
+        Node* newNode = new Node(value); // создание нового узла
         if (head == nullptr) {
             head = newNode;
             tail = newNode;
@@ -243,7 +246,7 @@ public:
         }
         ++numberOfElements;
     }
-
+    // Добавление элемента в контейнер по заданному индексу ?
     void insert(int index, const T& value) {
         if (index > numberOfElements) {
             return;
@@ -275,7 +278,7 @@ public:
         }
         ++numberOfElements;
     }
-
+    // Удаление элемента из контейнера по заданному индексу
     void erase(int index) {
         if (index >= numberOfElements) {
             return;
@@ -309,7 +312,7 @@ public:
         delete nodeToRemove;
         --numberOfElements;
     }
-
+    // Вывод в консоль всех элементов контейнера, разделенных запятыми
     void print() const {
         Node* current = head;
         while (current != nullptr) {
@@ -320,7 +323,7 @@ public:
             current = current->next;
         }
     }
-
+    // Перегрузка оператора [] для доступа к элементам контейнера по индексу
     T& operator[](int index) {
         if (index < 0 || index >= numberOfElements) {
             std::cout << "Неверный индекс!" << std::endl;
@@ -329,13 +332,13 @@ public:
         for (int i = 0; i < index; ++i) {
             current = current->next;
         }
-            return current->value;
-        }
-
+        return current->value;
+    }
+    // Возвращает количество элементов в контейнере
     int get_size() const {
         return numberOfElements;
     }
-
+    // Деструктор ?
     ~BidirectionalList() {
         Node* current = head;
         while (current != nullptr) {
@@ -485,7 +488,7 @@ public:
             current = current->next;
         }
     }
-
+    // Перегрузка оператора [] для доступа к элементам контейнера по индексу
     T& operator[](int index) {
         if (index < 0 || index >= numberOfElements) {
             std::cout << "Неверный индекс!" << std::endl;
@@ -496,7 +499,7 @@ public:
         }
         return current->value;
     }
-
+    // Возвращает количество элементов в контейнере
     int get_size() const {
         return numberOfElements;
     }
